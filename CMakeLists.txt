@@ -8,7 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  tf
   uuv_world_ros_plugins_msgs
+  visualization_msgs
 )
 
 add_service_files(
@@ -30,10 +32,13 @@ catkin_package(CATKIN_DEPENDS
   rospy
   sensor_msgs
   std_msgs
+  tf
   uuv_world_ros_plugins_msgs
+  visualization_msgs
 )
 
 catkin_install_python(PROGRAMS
   nodes/ocean_currents
+  nodes/ocean_currents_visualization
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
