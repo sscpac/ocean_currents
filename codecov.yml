@@ -1,0 +1,9 @@
+---
+ignore:
+  - "build"
+  - "devel"
+  - "test"
+  - "src/ocean_currents/test"
+
+fixes:
+  - "src/ocean_currents/::"

@@ -1,42 +1,48 @@
 #! /usr/bin/env python
-"""Provide ocean current information for given lat/lon."""
+"""Provide ocean current information for given lat/lon.
 
-"""
-This software was developed by employees of the Federal Government in the course of their official duties. Pursuant to title 17
-Section 105 of the United States Code, this software is not subject to copyright protection and is in the public domain. The
-Government assumes no responsibility whatsoever for its use by other parties, and the software is provided "AS IS" without warranty or
-guarantee of any kind, express or implied, including, but not limited to, the warranties of merchantability, fitness for a particular
-purpose, and noninfringement. In no event shall the Government be liable for any claim, damages or other liability, whether in an
-action of contract, tort or other dealings in the software. The software is not designed for use in (i) the design, construction,
-operation or maintenance of any nuclear facility; (ii) navigating or operating aircraft or any manned vehicle; or (iii) any
-life-saving, life-support or life-critical medical equipment. The Government has no obligation hereunder to provide maintenance,
-support, updates, enhancements, or modifications.  We would appreciate acknowledgement if the software is used. This software can be
-redistributed and/or modified freely provided that any derivative works bear some notice that they are derived from it, and any
-modified versions bear some notice that they have been modified.
+This software was developed by employees of the Federal Government in the course of
+their official duties. Pursuant to title 17 Section 105 of the United States Code, this
+software is not subject to copyright protection and is in the public domain. The
+Government assumes no responsibility whatsoever for its use by other parties, and the
+software is provided "AS IS" without warranty or guarantee of any kind, express or
+implied, including, but not limited to, the warranties of merchantability, fitness for
+a particular purpose, and noninfringement. In no event shall the Government be liable
+for any claim, damages or other liability, whether in an action of contract, tort or
+other dealings in the software. The software is not designed for use in (i) the design,
+construction, operation or maintenance of any nuclear facility; (ii) navigating or
+operating aircraft or any manned vehicle; or (iii) any life-saving, life-support or
+life-critical medical equipment. The Government has no obligation hereunder to provide
+maintenance, support, updates, enhancements, or modifications.  We would appreciate
+acknowledgement if the software is used. This software can be redistributed and/or
+modified freely provided that any derivative works bear some notice that they are
+derived from it, and any modified versions bear some notice that they have been
+modified.
 """
 
 import datetime
 import math
-import rospy
-from ocean_currents.srv import GetOceanCurrent, GetOceanCurrentResponse
-from sensor_msgs.msg import NavSatFix
-from uuv_world_ros_plugins_msgs.srv import SetCurrentVelocity
-
-from packaging import version
-import netCDF4
-from netCDF4 import Dataset
-
-try:
-    from cftime import num2date, date2num, date2index
-except ImportError:
-    from netCDF4 import num2date, date2num, date2index
-import numpy as np
 import re
-
+from packaging import version
 from siphon.catalog import TDSCatalog
 
+try:
+    from cftime import num2date, date2num
+except ImportError:
+    from netCDF4 import num2date, date2num  # NOLINT
+import netCDF4
+from netCDF4 import Dataset  # NOLINT
+import numpy as np
 
-class OceanCurrents(object):  # pylint: disable=too-few-public-methods
+import rospy
+from sensor_msgs.msg import NavSatFix
+from uuv_world_ros_plugins_msgs.srv import SetCurrentVelocity
+from ocean_currents.srv import GetOceanCurrent, GetOceanCurrentResponse  # NOLINT
+
+
+class OceanCurrents(
+    object
+):  # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """Provide ocean current information for given lat/lon."""
 
     def __init__(self):
@@ -51,7 +57,7 @@ class OceanCurrents(object):  # pylint: disable=too-few-public-methods
         # https://podaac-opendap.jpl.nasa.gov/opendap/allData/oscar/preview/L4/oscar_third_deg/docs/oscarthirdguide.pdf
         self.catalog_url = rospy.get_param(
             "~catalog_url",
-            "https://podaac-opendap.jpl.nasa.gov/opendap/allData/oscar/preview/L4/oscar_third_deg/",
+            "https://podaac-opendap.jpl.nasa.gov/opendap/allData/oscar/preview/L4/oscar_third_deg/",  # NOLINT
         )
 
         # default to OSCAR time unit
@@ -66,16 +72,18 @@ class OceanCurrents(object):  # pylint: disable=too-few-public-methods
         else:
             self.filename = self.catalog_url + self.download_oscar_file()
 
-        self.nc = Dataset(self.filename, "r")
+        nc_data = Dataset(self.filename, "r")
 
-        self.times = self.nc.variables["time"][:]
-        self.lats = self.nc.variables["latitude"][:]
-        self.lons = self.nc.variables["longitude"][:]
-        self.depths = self.nc.variables["depth"][:]
-        self.u = self.nc.variables["u"]
-        self.v = self.nc.variables["v"]
-        self.um = self.nc.variables["um"]
-        self.vm = self.nc.variables["vm"]
+        self.times = nc_data.variables["time"][:]
+        self.lats = nc_data.variables["latitude"][:]
+        self.lons = nc_data.variables["longitude"][:]
+        self.depths = nc_data.variables["depth"][:]
+        # pylint: disable=invalid-name
+        self.u = nc_data.variables["u"]
+        self.v = nc_data.variables["v"]
+        self.um = nc_data.variables["um"]
+        self.vm = nc_data.variables["vm"]
+        # pylint: enable=invalid-name
 
         self.sub = rospy.Subscriber("gps_fix", NavSatFix, self.gps_callback)
         self.srv = rospy.Service(
@@ -107,10 +115,10 @@ class OceanCurrents(object):  # pylint: disable=too-few-public-methods
 
     def oscar_filename_to_datetime(self, filename):
         """Extract the date from an OSCAR dataset filename."""
-        regex = "oscar_vel(\d+)\.nc\.gz"
-        m = re.search(regex, filename)
-        if m:
-            days = int(m.group(1))
+        regex = r"oscar_vel(\d+)\.nc\.gz"
+        match = re.search(regex, filename)
+        if match:
+            days = int(match.group(1))
             if version.parse(netCDF4.__version__) >= version.parse("1.5.3"):
                 return num2date(
                     days,
@@ -118,10 +126,9 @@ class OceanCurrents(object):  # pylint: disable=too-few-public-methods
                     only_use_cftime_datetimes=False,
                     only_use_python_datetimes=True,
                 )
-            else:
-                return num2date(days, units=self.time_unit)
-        else:
-            return None
+            return num2date(days, units=self.time_unit)
+
+        return None
 
     def get_oscar_filename_from_date(self, oscar_catalog, date):
         """Get the closest OSCAR dataset filename for a given date."""
@@ -129,9 +136,8 @@ class OceanCurrents(object):  # pylint: disable=too-few-public-methods
         ds_times = [self.oscar_filename_to_datetime(key) for key in keys]
 
         file_date = min(ds_times, key=lambda x: abs(x - date))
-        file_idx = ds_times.index(file_date)
-        oscarDays = int(date2num(file_date, self.time_unit))
-        filename = "oscar_vel" + str(oscarDays) + ".nc.gz"
+        oscar_days = int(date2num(file_date, self.time_unit))
+        filename = "oscar_vel" + str(oscar_days) + ".nc.gz"
         return filename
 
     @classmethod
@@ -144,10 +150,10 @@ class OceanCurrents(object):  # pylint: disable=too-few-public-methods
         return val
 
     @classmethod
-    def get_closest_index(cls, vals, pt):
+    def get_closest_index(cls, vals, point):
         """Find the index of the closest point (in squared distance) to given value."""
         # find squared distance of every point on grid
-        dist_sq = (vals - pt) ** 2
+        dist_sq = (vals - point) ** 2
         # 1D index of minimum dist_sq element
         minindex_flattened = dist_sq.argmin()
         # Get 2D index for latvals and lonvals arrays from 1D index

@@ -43,7 +43,8 @@ One can also provide a local file in the [OSCAR file format][OscarGuide] to bypa
 
 `~oscar_filename` (string, default: ``)
 
-* Used to specify a local file previously downloaded from [NASA's OSCAR dataset][OscarData] instead of downloading one at runtime.
+* Used to specify a local file previously downloaded from [NASA's OSCAR dataset][OscarData] instead of downloading one
+  at runtime.
 
 `~reference_datetime` (string, default: ``)
 
