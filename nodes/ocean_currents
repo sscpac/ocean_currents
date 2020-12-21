@@ -72,16 +72,18 @@ class OceanCurrents(
         else:
             self.filename = self.catalog_url + self.download_oscar_file()
 
-        nc = Dataset(self.filename, "r")
+        nc_data = Dataset(self.filename, "r")
 
-        self.times = nc.variables["time"][:]
-        self.lats = nc.variables["latitude"][:]
-        self.lons = nc.variables["longitude"][:]
-        self.depths = nc.variables["depth"][:]
-        self.u = nc.variables["u"]
-        self.v = nc.variables["v"]
-        self.um = nc.variables["um"]
-        self.vm = nc.variables["vm"]
+        self.times = nc_data.variables["time"][:]
+        self.lats = nc_data.variables["latitude"][:]
+        self.lons = nc_data.variables["longitude"][:]
+        self.depths = nc_data.variables["depth"][:]
+        # pylint: disable=invalid-name
+        self.u = nc_data.variables["u"]
+        self.v = nc_data.variables["v"]
+        self.um = nc_data.variables["um"]
+        self.vm = nc_data.variables["vm"]
+        # pylint: enable=invalid-name
 
         self.sub = rospy.Subscriber("gps_fix", NavSatFix, self.gps_callback)
         self.srv = rospy.Service(

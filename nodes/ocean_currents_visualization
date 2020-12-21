@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 """Provide visualization markers for ocean currents.
 
 This software was developed by employees of the Federal Government in the course of
@@ -33,7 +33,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from ocean_currents.srv import GetOceanCurrent
 
 
-class OceanCurrentsVisualization(object):
+class OceanCurrentsVisualization(object):  # pylint: disable=too-many-instance-attributes
     """Provide visualization markers for ocean currents."""
 
     def __init__(self):
