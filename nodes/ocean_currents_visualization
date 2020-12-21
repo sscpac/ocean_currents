@@ -33,7 +33,9 @@ from visualization_msgs.msg import Marker, MarkerArray
 from ocean_currents.srv import GetOceanCurrent
 
 
-class OceanCurrentsVisualization(object):  # pylint: disable=too-many-instance-attributes
+class OceanCurrentsVisualization(
+    object
+):  # pylint: disable=too-many-instance-attributes
     """Provide visualization markers for ocean currents."""
 
     def __init__(self):
