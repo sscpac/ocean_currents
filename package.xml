@@ -26,8 +26,7 @@
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>tf</depend>
   <depend>uuv_world_ros_plugins_msgs</depend>
-  
-
-  <exec_depend>rqt_reconfigure</exec_depend>
+  <depend>visualization_msgs</depend>
 </package>
