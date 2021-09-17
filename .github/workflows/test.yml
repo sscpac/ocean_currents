@@ -1,7 +1,12 @@
 ---
 name: Build & Test
 
-on: [pull_request, push]  # NOLINT
+on: # NOLINT
+  pull_request:
+  push:
+  schedule:
+    - cron: '0 3 * * MON'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,15 +16,15 @@ jobs:
     strategy:
       matrix:
         container:
-          - image: 'ros:melodic'
-            env:
-              PYTHON_VERSION:
-              ROS_DISTRO: melodic
           # Dependencies (uuv_simulator) are not yet available on Noetic.
           # - image: 'ros:noetic'
           #   env:
           #     PYTHON_VERSION: 3
           #     ROS_DISTRO: noetic
+          - image: 'ros:melodic'
+            env:
+              PYTHON_VERSION:
+              ROS_DISTRO: melodic
 
     container: ${{ matrix.container }}
 
